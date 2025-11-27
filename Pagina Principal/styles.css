@@ -1,0 +1,461 @@
+﻿/* --- Paleta de Colores Estimada --- */
+
+:root {
+    --color-sepia-oscuro: #54392D;
+    --color-beige-claro: #EADCB6;
+    --color-ocre-tierra: #C97E4A;
+    --color-marron-suave: #A5866C;
+    --color-texto-claro-explora: #F5E9CE;
+    --font-cinzel: 'Cinzel', serif;
+}
+
+/* Estilos Generales y Reseteo */
+body {
+    margin: 0;
+    font-family: sans-serif;
+    color: var(--color-sepia-oscuro);
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    /* PROPIEDADES CRÍTICAS PARA EL DESENFOQUE */
+    background-color: var(--color-beige-claro);
+    --current-blur: 0px;
+    position: relative;
+    z-index: 1;
+}
+
+    /* 🌫️ FONDO DIFUMINADO AL SCROLL (body::before) */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        min-height: 100vh;
+        height: 100%;
+        z-index: -1;
+        /* IMAGEN DE FONDO */
+        background: url('fondo-completo-pagina.png') no-repeat center top;
+        background-attachment: fixed;
+        background-size: cover;
+
+        /* EFECTO BLUR CONTROLADO POR JAVASCRIPT */
+        filter: blur(var(--current-blur));
+        transition: filter 0.2s linear;
+    }
+
+/* --- SECCIÓN 1: PORTADA PRINCIPAL --- */
+
+.hero-section {
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+/* Contenedor principal del texto */
+.content-wrapper {
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    margin-top: 0;
+    /* ✅ Transform unificado */
+    transform: translateY(-50px);
+}
+
+/* Título y Subtítulo */
+.main-title {
+    font-family: var(--font-cinzel);
+    font-size: 6.5vw;
+    color: var(--color-sepia-oscuro);
+    margin: 0;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2), -1px -1px 0px var(--color-ocre-tierra);
+    line-height: 1;
+}
+
+.subtitle {
+    font-family: var(--font-cinzel);
+    font-size: 2.0vw;
+    color: var(--color-ocre-tierra);
+    margin-top: 15px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+
+}
+
+/* --- POSICIONAMIENTO SUPERIOR (LOGO + BUSCADOR) --- */
+.top-bar-container {
+    position: absolute;
+    top: 5vh;
+    left: 50px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 9999;
+    width: 90vw;
+    justify-content: flex-start;
+}
+
+.top-logo {
+    width: 220px; /* Tamaño del logo ajustado */
+    height: auto;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-beige-claro);
+    border-radius: 50px;
+    box-sizing: content-box; /* ⬅️ ASEGÚRATE DE QUE ESTO NO ESTÉ O CÁMBIALO A content-box */
+    box-sizing: border-box;
+    padding: 10px 25px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+    border: 3px solid var(--color-sepia-oscuro);
+    overflow: hidden;
+    position: relative;
+}
+
+    .search-bar.top-search {
+        position: relative;
+        transform: none;
+        width: 80vw;
+        max-width: 800px;
+        overflow: hidden;
+    }
+    .search-bar.bottom-search {
+        /* ... otros estilos ... */
+        max-width: 750px; /* ⬅️ Revisa este valor */
+    }
+    .search-bar input {
+        flex-grow: 1;
+        border: none;
+        background: transparent;
+        font-size: 1.1em;
+        padding: 0 15px;
+        color: var(--color-sepia-oscuro);
+        outline: none;
+        cursor: default;
+    }
+
+.search-icon {
+    height: 1.5em;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer; /* ✅ Cursor de mano para la lupa */
+}
+
+.mic-icon {
+    border-left: 2px solid var(--color-ocre-tierra);
+    padding-left: 15px;
+    margin-left: 5px;
+    cursor: pointer; /* ✅ Cursor de mano para el micrófono */
+}
+
+/* --- SECCIÓN 2: EXPLORA --- */
+
+.explore-section {
+    min-height: 400px;
+    padding: 100px 20px;
+    text-align: center;
+    width: 100vw;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    margin-top: -100px;
+}
+
+.section-title {
+    font-family: var(--font-cinzel);
+    font-size: 5vw;
+    color: var(--color-texto-claro-explora);
+    margin-bottom: 50px;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.85);
+}
+
+.search-bar.bottom-search {
+    margin: 0 auto 70px auto;
+    width: 60vw;
+    max-width: 750px;
+}
+
+.bottom-search .mic-icon {
+    display: block;
+}
+
+/* Menú de Íconos */
+.icon-menu {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.icon-item {
+    width: calc(25% - 40px); /* Ajustado para 4 ítems */
+    min-width: 150px;
+    text-align: center;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+}
+
+.icon-stone {
+    background-color: var(--color-beige-claro);
+    border-radius: 50%;
+    width: 10vw;
+    height: 10vw;
+    min-width: 120px;
+    min-height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.4);
+    border: 4px solid var(--color-ocre-tierra);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: var(--icon-bg-size, 70%);
+    max-width: 180px; /* Prueba con un valor entre 160px y 200px */
+    max-height: 180px; /* El mismo valor */
+}
+
+/* Rutas de Íconos: (cursor pointer añadido) */
+.icon-item:nth-child(1) .icon-stone {
+    background-image: url('icon-arbol.gif');
+    background-position: center;
+    background-size: 215%; /* ⬅️ Aumenta este porcentaje (ej: 120%, 130%, 150%) */
+    cursor: pointer;
+}
+
+.icon-item:nth-child(2) .icon-stone {
+    background-image: url('icon-descubrimientos.gif');
+    background-position: center -9px; /* ⬅️ EJEMPLO: Mueve 10px hacia abajo */
+    background-size: 215%;
+    cursor: pointer;
+}
+
+.icon-item:nth-child(3) .icon-stone {
+    background-image: url('icon-islas.gif'); /* ⬅️ RUTA A TU GIF */
+    background-position: center;
+    background-size: 149%; /* Otro ejemplo */
+    cursor: pointer;
+}
+
+.icon-item:nth-child(4) .icon-stone {
+    background-image: url('icon-videos.gif'); /* ⬅️ RUTA A TU GIF */
+    background-position: center;
+    background-size: 130%; /* Otro ejemplo */
+    cursor: pointer;
+}
+
+
+.icon-item p {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: var(--color-texto-claro-explora);
+    margin: 0;
+    font-family: var(--font-cinzel);
+    text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.9);
+    line-height: 1.1;
+    transition: transform 0.2s ease-out;
+}
+* ✅ AÑADE ESTA NUEVA REGLA (Mueve el texto al hacer hover) */
+.icon-item:hover p {
+    transform: translateY(-5px); /* ⬅️ Mueve el texto 5px hacia arriba */
+    text-shadow: 4px 4px 5px rgba(0, 0, 0, 0.9); /* Sombra más fuerte al moverse */
+}
+
+/* Opcional: Acentúa el efecto haciendo que el texto se acerque un poco */
+.icon-item:hover p {
+    transform: translateY(-5px) translateZ(10px); /* Mueve y acerca la capa del texto */
+}
+/* ✅ AÑADIR ESTO: Brillo Interactivo en los Íconos */
+.icon-item:hover .icon-stone,
+.icon-item:focus-within .icon-stone {
+    /* Estas reglas ya existen en tu código, solo necesitamos la sombra */
+    /* transform: scale(1.06); 
+    box-shadow: 0 10px 18px rgba(0,0,0,0.45); */
+    /* 🌟 Añade un brillo ocre y mantiene la sombra de elevación */
+    box-shadow: 0 0 15px var(--color-ocre-tierra), /* Resplandor suave ocre */
+    0 0 25px var(--color-ocre-tierra), /* Resplandor más amplio y fuerte */
+    0 10px 18px rgba(0,0,0,0.45); /* Mantiene la sombra de elevación */
+}
+/* --- ANIMACIONES DE ENTRADA --- */
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+@keyframes subtlePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.005); } /* Zoom del 0.5% */
+    100% { transform: scale(1); }
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animated-slideup {
+    opacity: 0;
+    animation: slideUp 1s ease-out forwards;
+}
+
+.main-title.animated-slideup {
+    animation-delay: 0.3s;
+}
+
+.subtitle.animated-slideup {
+    animation-delay: 0.6s;
+}
+
+.animated-fadein {
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.top-logo.animated-fadein {
+    animation-delay: 0.1s;
+}
+
+.top-search.animated-fadein {
+    animation-delay: 0.2s;
+}
+
+.icon-item.animated-scalein {
+    opacity: 0;
+    animation: scaleIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.icon-menu .icon-item:nth-child(1).animated-scalein {
+    animation-delay: 1.2s;
+}
+
+.icon-menu .icon-item:nth-child(2).animated-scalein {
+    animation-delay: 1.4s;
+}
+
+.icon-menu .icon-item:nth-child(3).animated-scalein {
+    animation-delay: 1.6s;
+}
+
+.icon-menu .icon-item:nth-child(4).animated-scalein {
+    animation-delay: 1.8s;
+}
+
+
+/* === Botón "Volver arriba" (Flecha Corregida) === */
+#goTop {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid var(--color-ocre-tierra);
+    background-color: rgba(234, 220, 182, 0.85);
+    color: var(--color-sepia-oscuro);
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+/* === FOOTER / PIE DE PÁGINA (Ajustes de Color y Espacio) === */
+.site-footer {
+    width: 100%;
+    background-color: rgba(84, 57, 45, 0.9);
+    color: var(--color-texto-claro-explora);
+    text-align: center;
+    padding: 20px 10px;
+    font-family: var(--font-cinzel);
+    font-size: 0.95em;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+    position: relative;
+    margin-top: 80px; /* Margen separado del contenido */
+}
+
+    .site-footer p {
+        margin: 0;
+        letter-spacing: 0.5px;
+        color: var(--color-texto-claro-explora);
+    }
+
+.footer-logo {
+    display: block;
+    margin: 0 auto 12px;
+    width: 90px; /* Tamaño del logo del footer */
+    height: auto;
+    filter: brightness(1.8) drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+}
+/* --- EFECTO DE ONDULACIÓN (RIPPLE EFFECT) --- */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    opacity: 1;
+    background-color: rgba(84, 57, 45, 0.2); /* Color sepia con baja opacidad */
+    pointer-events: none; /* Asegura que la onda no interfiera con otros clics */
+    animation: ripple-animation 0.7s ease-out;
+}
+
+/* Keyframe para la animación de la onda */
+@keyframes ripple-animation {
+    to {
+        transform: scale(25); /* Expande la onda hasta el doble de su tamaño */
+        opacity: 0; /* Hace que la onda desaparezca */
+    }
+}
+/* --- CORRECCIÓN PARA PANTALLAS GRANDES (≥ 1200px) --- */
+@media (min-width: 1200px) {
+    .main-title {
+        font-size: 100px; /* Congelar el tamaño del título principal */
+    }
+
+    .subtitle {
+        font-size: 30px; /* Congelar el tamaño del subtítulo */
+    }
+
+    .section-title {
+        font-size: 80px; /* Congelar el tamaño de 'EXPLORA' */
+    }
+}
