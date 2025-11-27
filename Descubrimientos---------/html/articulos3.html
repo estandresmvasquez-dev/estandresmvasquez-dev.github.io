@@ -1,0 +1,969 @@
+﻿<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+<meta charset="utf-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Artículos y descubrimientos — Hominidos</title>
+
+<style>
+
+  :root{
+
+    --bg: url("../Imagenes/fondoarticulos.png");
+
+    --paper: #fcfaf5;
+
+    --ink: #2f2a23;
+
+    --accent: #1a8b59;
+
+  }
+
+
+
+/* ====== ESCENA CON FONDO POR SECCIÓN ====== */
+
+  .stage{
+
+    position: fixed; inset: 0;
+
+    background-image: var(--bg);
+
+    background-size: cover;
+
+    background-position: center center;
+
+    background-repeat: no-repeat;
+
+    overflow: hidden;
+
+    box-shadow: inset 0 0 200px rgba(0,0,0,.45);
+
+  }
+
+  .layer{ position:absolute; inset:0; }
+
+
+
+  .headline{
+
+    position:absolute; left:50%; top:10%;
+
+    transform:translateX(-50%);
+
+    text-align:center;
+
+    color:#f3efe8;
+
+    text-shadow: 0 2px 18px rgba(0,0,0,.6);
+
+    font: 900 clamp(28px, 5vw, 60px)/1.08 "Segoe UI", system-ui, sans-serif;
+
+    letter-spacing:.06em;
+
+  }
+
+
+
+  /* Líneas “conexiones” */
+
+  .glow-line{
+
+    stroke: rgba(255,255,255,.85);
+
+    stroke-width: 2.5;
+
+    fill: none;
+
+    filter: drop-shadow(0 0 6px rgba(255,255,255,.8));
+
+    stroke-dasharray: 6 8;
+
+    animation: dash 6s linear infinite;
+
+  }
+
+  @keyframes dash { to { stroke-dashoffset: -280; } }
+
+
+
+  /* Hotspots (círculos clicables) */
+
+  .hotspot{
+
+    position:absolute;
+
+    width:min(16vw, 210px);
+
+    aspect-ratio:1/1;
+
+    border-radius:50%;
+
+    transform:translate(-50%, -50%);
+
+    display:grid; place-items:center;
+
+    cursor:pointer;
+
+    outline: 3px solid rgba(255,255,255,.15);
+
+    outline-offset: 3px;
+
+    transition: transform .15s ease, box-shadow .15s ease, outline-color .15s ease;
+
+    background-size: cover;
+
+    background-position: center center;
+
+    background-repeat: no-repeat;
+
+  }
+
+  .hotspot:hover{
+
+    transform:translate(-50%, -50%) scale(1.03);
+
+    outline-color: rgba(255,255,255,.35);
+
+    box-shadow: 0 0 35px 6px rgba(255,255,255,.18);
+
+  }
+
+  .hotspot > button{
+
+    font: 800 13px/1 system-ui, Segoe UI, sans-serif;
+
+    padding:.5rem .85rem;
+
+    border-radius:999px;
+
+    border:1px solid rgba(0,0,0,.12);
+
+    background: rgba(255,255,255,.9);
+
+    color:#2b2b2b;
+
+    box-shadow: inset 0 1px 0 #fff, 0 1px 8px rgba(0,0,0,.25);
+
+    backdrop-filter: blur(2px);
+
+  }
+
+  .hs-viejo      { left: 34%; top: 42%; background-image: url("../Imagenes/Viejo.jpg"); }
+
+  .hs-intermedio { left: 50%; top: 64%; background-image: url("../Imagenes/intermedio.jpg"); }
+
+  .hs-reciente   { left: 66%; top: 42%; background-image: url("../Imagenes/Reciente.jpg"); }
+
+
+
+  .pager{ position:absolute; left:50%; bottom:3%; transform:translateX(-50%); display:flex; gap:.5rem; align-items:center; color:#eee; font: 600 13px/1 system-ui, Segoe UI, sans-serif; text-shadow: 0 2px 12px rgba(0,0,0,.65);}
+
+  .pill{ padding:.4rem .7rem; border-radius:999px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.25); backdrop-filter: blur(2px);} .pager a{ text-decoration:none; color:inherit; } .pill.active{ background:rgba(255,255,255,.35); border-color:rgba(255,255,255,.5);} .pill.disabled{ opacity:.45; pointer-events:none; }
+
+
+
+  .back{
+
+    position:absolute; left:2.2%; top:2%;
+
+    display:inline-flex; gap:.5rem; align-items:center;
+
+    padding:.5rem .8rem; border-radius:999px; border:0;
+
+    background: rgba(255,255,255,.9);
+
+    color:#2b2b2b; font:600 14px/1 system-ui, Segoe UI, sans-serif;
+
+    box-shadow: 0 1px 8px rgba(0,0,0,.25);
+
+    cursor:pointer; opacity:0; pointer-events:none; transition:.2s ease;
+
+  }
+
+  .back.show{ opacity:1; pointer-events:auto; }
+
+
+
+/* ====== VISTA DE ARTÍCULO A PANTALLA COMPLETA ====== */
+
+  .modal{ position: fixed; inset:0; display:none; }
+
+  .modal.open{ display:block; }
+
+  .shade{
+
+    position:absolute; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(2px);
+
+  }
+
+  .stela{
+
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+
+    width:min(1200px, 94vw); height:min(88vh, 900px);
+
+    background: radial-gradient(120% 120% at 50% 30%, #fffdf8 0, var(--paper) 70%, #efe9dd 100%);
+
+    border-radius:26px;
+
+    box-shadow: 0 20px 80px rgba(0,0,0,.5), inset 0 0 0 2px rgba(0,0,0,.06);
+
+    border: 1px solid rgba(0,0,0,.12);
+
+    padding: clamp(14px, 1.8vw, 22px);
+
+    display:grid; grid-template-rows:auto 1fr auto; gap:.8rem;
+
+  }
+
+  /* Encabezado chip */
+
+  .stela-chip{
+
+    margin: 0 auto; padding:.35rem .9rem; border-radius:999px;
+
+    background:#ece3d4; color:#6a5a46;
+
+    font: 800 clamp(12px,1.6vw,14px)/1.1 "Segoe UI", system-ui, sans-serif;
+
+    letter-spacing:.06em;
+
+    box-shadow: inset 0 1px 0 #fff, 0 2px 8px rgba(0,0,0,.15);
+
+  }
+
+
+
+  .stela-grid{
+
+    display:grid; grid-template-columns: 1fr 1.1fr; gap: clamp(12px, 2.2vw, 28px);
+
+    height: 100%;
+
+  }
+
+  /* Columna izquierda: imagen/ilustración */
+
+  .figure{
+    position:relative; border-radius:22px; overflow:hidden;
+    background: var(--paper); display:grid; place-items:center;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
+  }
+  .figure img{
+    width:100%; height:100%; object-fit:cover; object-position:center; display:none;
+  }
+  .figure.contain img{ object-fit:contain; background: var(--paper); }
+  .figure.has-image img{ display:block; }.illus{ width:86%; height:auto; max-height:90%; opacity:.95; display:none; }
+
+
+
+  /* Columna derecha: texto */
+
+  .copy{
+
+    padding: clamp(8px, 1.6vw, 14px);
+
+    color: var(--ink);
+
+    display:flex; flex-direction:column; gap:.6rem; overflow:auto;
+
+  }
+
+  .copy h2{ margin:0; font:800 clamp(20px, 2.6vw, 30px)/1.15 system-ui, Segoe UI, sans-serif; color:#3b332b; }
+
+  .copy p{ margin:.2rem 0; font: 16px/1.55 "Segoe UI", system-ui, sans-serif; }
+
+  .copy ul{ margin:.2rem 0 .6rem 1.2rem; }
+
+  .copy li{ margin:.2rem 0; }
+
+  .meta{ font-size:13px; color:#6b645b; }
+
+  .cta{
+
+    align-self:flex-start; margin-top:.4rem;
+
+    padding:.65rem 1rem; border-radius:10px; text-decoration:none; border:0;
+
+    background:var(--accent); color:#fff; font-weight:800;
+
+    box-shadow: 0 2px 10px rgba(26,139,89,.45);
+
+  }
+
+  .cta.cta-video{ background:#d64040; box-shadow:0 2px 10px rgba(214,64,64,.45); }
+
+  .cta.cta-video:hover{ filter:brightness(.95); }
+
+  .copy .cta + .cta{ margin-left:.6rem; }
+
+
+
+  .close{
+
+    position:absolute; right:10px; top:10px;
+
+    width:38px; height:38px; border-radius:50%; border:0; cursor:pointer;
+
+    background:#2b2b2b; color:#fff; font-size:18px; display:grid; place-items:center;
+
+  }
+
+
+
+  @media (max-width: 900px){
+
+    .stela{ height: 92vh; }
+
+    .stela-grid{ grid-template-columns: 1fr; grid-template-rows: 42% 1fr; }
+
+  }
+
+  @media (max-width:680px){
+
+    .hs-viejo      { left: 34%; top: 42%; background-image: url("../Imagenes/Viejo.jpg"); }
+
+    .hs-intermedio { left: 50%; top: 64%; background-image: url("../Imagenes/intermedio.jpg"); }
+
+    .hs-reciente   { left: 72%; top: 42%; }
+
+  }
+
+  /* Ocultar conexiones decorativas */
+
+  .glow-line{ display:none !important; }
+
+  /* Leyenda e inicio */
+
+  .legend{ position:absolute; left:2%; top:2%; display:flex; gap:.6rem; align-items:center; padding:.55rem .8rem; border-radius:999px; border:1px solid rgba(0,0,0,.12); background: rgba(255,255,255,.92); color:#2b2b2b; font:600 13px/1 system-ui, Segoe UI, sans-serif; box-shadow: 0 1px 8px rgba(0,0,0,.25); z-index:10; }
+
+  .legend .ico{ width:18px; height:18px; border-radius:50%; display:inline-block; background-size:cover; background-position: center center; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+
+  .legend .old{ background-image:url("../Imagenes/Viejo.jpg"); }
+
+  .legend .mid{ background-image:url("../Imagenes/intermedio.jpg"); }
+
+  .legend .new{ background-image:url("../Imagenes/Reciente.jpg"); }
+
+</style>
+
+<style>
+  /* Particle canvas overlay */
+  .particle-canvas{
+    position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; display:block;
+    mix-blend-mode: screen;
+  }
+
+  /* Hotspot micro-animations */
+  .hotspot{
+    transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .25s ease, outline-color .18s ease;
+    will-change: transform;
+    animation: floaty 6s ease-in-out infinite;
+  }
+
+  .hotspot::after{
+    content:""; position:absolute; inset:0; border-radius:50%; pointer-events:none;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.08); transition: box-shadow .35s ease; z-index:-1;
+  }
+
+  .hotspot:hover{ transform:translate(-50%, -50%) scale(1.06); outline-color: rgba(255,255,255,.45); }
+  .hotspot:active{ transform:translate(-50%, -50%) scale(0.98); }
+
+  @keyframes floaty{
+    0%{ transform:translate(-50%, -50%) translateY(0px); }
+    50%{ transform:translate(-50%, -50%) translateY(-6px); }
+    100%{ transform:translate(-50%, -50%) translateY(0px); }
+  }
+
+  /* small ripple when hotspot is focused via keyboard */
+  .hotspot:focus-visible{ outline: 3px solid rgba(255,255,255,.35); transform:translate(-50%, -50%) scale(1.05); }
+
+  /* Botón volver */
+  #volver-btn {
+    transition: all 0.3s ease;
+  }
+  #volver-btn:hover {
+    background: #4A3732 !important;
+    color: white !important;
+    transform: scale(1.05);
+  }
+
+</style>
+
+</head>
+
+<body>
+
+  <main id="stage" class="stage" aria-label="Sección de artículos">
+
+    <h1 class="headline">ARTÍCULOS Y DESCUBRIMIENTOS RECIENTES</h1>
+
+
+
+    <!-- Leyenda e inicio -->
+
+    <div class="legend" role="note" aria-label="Leyenda de iconos">
+
+      <span class="ico old" title="Viejo (más de 15 años)"></span><span>Viejo (más de 15 años)</span>
+
+      <span class="ico mid" title="Intermedio (mas de 10 años)"></span><span>Intermedio (mas de 10 años)</span>
+
+      <span class="ico new" title="Reciente (5 años o menos)"></span><span>Reciente (5 años o menos)</span>
+
+    </div>
+
+
+
+    <!-- Hotspots -->
+
+    <div class="layer">
+
+      <canvas id="particle-canvas" class="particle-canvas" aria-hidden="true"></canvas>
+
+      <div class="hotspot hs-viejo"      data-target="viejo"><button type="button">Leer más</button></div>
+
+      <div class="hotspot hs-intermedio" data-target="intermedio"><button type="button">Leer más</button></div>
+
+      <div class="hotspot hs-reciente"   data-target="reciente"><button type="button">Leer más</button></div>
+
+    </div>
+
+
+
+    <!-- Paginación decorativa -->
+
+        <div class="pager">
+
+      <a class="pill prev" href="articulos2.html">Anterior</a>
+
+      <a class="pill" href="articulos.html">1</a>
+
+      <a class="pill" href="articulos2.html">2</a>
+
+      <a class="pill active" href="articulos3.html">3</a>
+
+      <a class="pill prev disabled" aria-disabled="true">Siguiente</a>
+
+    </div>
+
+
+
+    <!-- Botón volver -->
+
+    <button id="backBtn" class="back" type="button" aria-label="Volver a la sección principal">⟵ Volver</button>
+
+  </main>
+
+  <a id="volver-btn" href="../../Pagina Principal/index.html" style="position: fixed; bottom: 24px; left: 24px; z-index: 40; display: inline-flex; gap: 0.5rem; align-items: center; padding: 0.5rem 0.8rem; border-radius: 999px; background: rgba(255,255,255,.9); color: #2b2b2b; font: 600 14px/1 system-ui, Segoe UI, sans-serif; box-shadow: 0 1px 8px rgba(0,0,0,.25); text-decoration: none;">
+    ⟵ Volver
+  </a>
+
+
+
+  <!-- Vista de Artículo -->
+
+  <section id="modal" class="modal" aria-modal="true" role="dialog" aria-labelledby="modal-title">
+
+    <div class="shade" data-close></div>
+
+    <article class="stela" role="document">
+
+      <div class="stela-chip" id="stela-chip">ARTÍCULO</div>
+
+      <div class="stela-grid">
+
+        <figure id="fig" class="figure">
+
+          <!-- Imagen del artículo si hay URL -->
+
+          <img id="modal-img" alt="Imagen del artículo" />
+
+          <!-- Ilustración por defecto si no hay imagen -->
+
+          <svg class="illus" viewBox="0 0 200 200" aria-hidden="true">
+
+            <!-- cráneo simple -->
+
+            <g opacity=".9">
+
+              <path d="M120,55 a40,35 0 1,1 -40,0" fill="#e0d6c7" stroke="#6a5a46" stroke-width="3"/>
+
+              <circle cx="95" cy="90" r="8" fill="#2f2a23"/>
+
+              <circle cx="125" cy="90" r="8" fill="#2f2a23"/>
+
+              <path d="M85 115 Q110 130 135 115" fill="none" stroke="#6a5a46" stroke-width="4" stroke-linecap="round"/>
+
+            </g>
+
+            <!-- hueso -->
+
+            <g opacity=".9">
+
+              <path d="M40 150 q20 -10 40 0 q-20 10 -40 0z" fill="#e6dccf" stroke="#6a5a46" stroke-width="3"/>
+
+              <circle cx="36" cy="150" r="8" fill="#e6dccf" stroke="#6a5a46" stroke-width="3"/>
+
+              <circle cx="84" cy="150" r="8" fill="#e6dccf" stroke="#6a5a46" stroke-width="3"/>
+
+            </g>
+
+            <!-- pico -->
+
+            <g opacity=".95">
+
+              <rect x="28" y="36" width="12" height="60" rx="5" fill="#9b7b5e" stroke="#6a5a46" stroke-width="3"/>
+
+              <path d="M34 28 L110 72 L100 86 L24 42 Z" fill="#c9b9a2" stroke="#6a5a46" stroke-width="3"/>
+
+            </g>
+
+          </svg>
+
+        </figure>
+
+
+
+        <div class="copy">
+
+          <h2 id="modal-title"></h2>
+
+          <p id="modal-resumen"></p>
+
+          <ul id="modal-puntos"></ul>
+
+          <p class="meta" id="modal-meta"></p>
+
+          <a id="modal-link" class="cta" href="#" target="_blank" rel="noopener">Ver artículo completo</a>
+
+          <a id="modal-video" class="cta cta-video" href="#" target="_blank" rel="noopener">Ver video</a>
+
+        </div>
+
+      </div>
+
+      <button class="close" title="Cerrar (Esc)" data-close>✕</button>
+
+    </article>
+
+  </section>
+
+
+
+<script>
+
+/* ====== DATOS Y UTILIDADES ====== */
+
+const BGS = {
+
+  principal:  "../Imagenes/fondoarticulos.png",
+
+  viejo:      "../Imagenes/ArticulosMasViejos.png",
+
+  intermedio: "../Imagenes/ArticulosTiempoIntermedio.png",
+
+  reciente:   "../Imagenes/Articulosrecientes.png"
+
+};
+
+
+
+// ——— Artículos 
+
+const ARTICLES = {
+
+  viejo: {
+
+    chip: "ARTÍCULO ANTIGUO",
+
+    titulo: "Entendiendo el ADN de los antiguos homínidos",
+
+    resumen: "En octubre de 2022, Svante Pääbo recibió el Premio Nobel de Fisiología o Medicina por el trabajo que se describe a continuación.",
+
+    puntos: [
+
+      "En los últimos dos meses, los medios de comunicación han estado repletos de noticias con el anuncio de lo que muchos sugirieron como una nueva especie de homínido. En 2008, se descubrió en una cueva siberiana un hueso del meñique de un niño de 40.000 años de antigüedad. El hueso no fue suficiente para identificar la especie de su poseedor, pero dado que se sabe que tanto neandertales como humanos vivieron en la zona en ese momento, los científicos asumieron que pertenecía a una de estas dos especies.",
+
+      "Para comprender realmente el significado de este descubrimiento para nuestra comprensión de la historia evolutiva humana, necesitamos analizar las pruebas con mayor detenimiento. Lo más importante es que los investigadores secuenciaron el ADN mitocondrial del fósil: un corto bucle de ADN alojado en las mitocondrias, los orgánulos centrales de la célula. En comparación con el ADN nuclear, este tipo de ADN es fácil de obtener de los fósiles, ya que cada célula originalmente tenía muchas copias de su ADN mitocondrial y solo una copia de su genoma principal.",
+
+      "Si el árbol genético mitocondrial resulta ser un indicador preciso de las relaciones entre especies, podría significar que la Mujer X es una nueva especie. Pero también es posible que la Mujer X represente una especie distinta de los humanos y los neandertales, pero no una nueva especie. Por ejemplo, la Mujer X podría pertenecer a la especie Homo erectus. Hasta el momento, los científicos no han extraído ADN de los fósiles conocidos de Homo erectus, por lo que no podemos determinarlo analizando la secuencia genética de la Mujer X."
+
+    ],
+
+    link: "https://evolution.berkeley.edu/evo-news/making-sense-of-ancient-hominin-dna/",
+
+    fuente: "Artículo: “Making sense of ancient hominin DNA” — publicado en el sitio de la UC Museum of Paleontology / University of California, Berkeley (“evolution.berkeley.edu”).",
+
+    img: "../Imagenes/VeijoI3.jpeg",
+
+    fit: "contain"
+
+  },
+
+  intermedio: {
+
+    chip: "ARTÍCULO INTERMEDIO",
+
+    titulo: "Hallados en Marruecos los fósiles de Homo sapiens más antiguos del mundo",
+
+    resumen: "Durante décadas, investigadores que buscan el origen de nuestra especie han explorado el Gran Valle del Rift en África Oriental. Ahora, su búsqueda ha tomado un desvío inesperado hacia el oeste, hacia Marruecos: han redatado un cráneo, largamente olvidado, de una cueva llamada Jebel Irhoud, a una asombrosa edad de 300.000 años, y han desenterrado nuevos fósiles y herramientas de piedra. El resultado es la evidencia bien datada más antigua del Homo sapiens, que retrasa la aparición de nuestra especie en 100.000 años.",
+
+    puntos: [
+
+      "Estos fósiles se encontraron en África Oriental, considerada durante mucho tiempo la cuna de la evolución humana. En Herto, en el Gran Valle del Rift de Etiopía, los investigadores dataron cráneos de H. sapiens en unos 160.000 años; más al sur, en Omo Kibish, dos casquetes craneales datan de unos 195.000 años, lo que los convierte en los miembros más antiguos de nuestra especie ampliamente aceptados, hasta la fecha. «El mantra ha sido que la especiación del H. sapiens tuvo lugar hace unos 200.000 años», afirma Petraglia.",
+
+      "Los fósiles sugieren que los rostros desarrollaron rasgos modernos antes de que el cráneo y el cerebro adquirieran la forma globular que se observa en los fósiles de Herto y en personas actuales. «Es una larga historia; no fue que de repente estas personas se volvieran modernas», afirma Hublin.",
+
+      "Las conexiones entre estos cráneos y la aparición de herramientas de la MSA en África en esta época, y posiblemente antes, muestran «una intensa comunicación a lo largo del continente», afirma Brooks. «Esto demuestra un fenómeno panafricano, con poblaciones expandiéndose y contrayéndose a lo largo del continente durante mucho tiempo»."
+
+      
+
+    ],
+
+    link: "https://www.science.org/content/article/world-s-oldest-homo-sapiens-fossils-found-morocco",
+
+    fuente: "Los resultados fueron publicados en dos artículos en la revista Nature (edición del 8 de junio de 2017) por un equipo liderado por Jean‑Jacques Hublin y otros investigadores.",
+
+    img: "../Imagenes/IntermedioI3.jpg"
+
+  },
+
+  reciente: {
+
+    chip: "ARTÍCULO RECIENTE",
+
+    titulo: "Skhūl I, el niño que vivió hace 140.000 años y que científicos creen que es la mezcla más antigua entre un Homo sapiens y un neandertal",
+
+    resumen: "Así lo afirma un grupo de científicos en un estudio publicado en julio en la revista científica L'Anthropologie, sobre el cráneo de un niño que vivió hace 140.000 años y que fue encontrado hace casi un siglo en una de las cuevas del Monte Carmelo, al noroeste de Israel, en el que se considera es el cementerio más antiguo conocido.",
+
+    puntos: [
+
+      "Skhūl I murió por causas naturales a una edad temprana. De cómo vivió, no se sabe mucho. Tampoco es posible precisar con certeza qué afección pudo haberlo matado a tan temprana edad ni su sexo biológico.",
+
+      "Lo llamamos una población con introgresión, lo que significa que los genes de una población penetraron lenta y gradualmente en el otro grupo. Así que, en realidad, lo que vemos en Skhūl es una población casi sapiens, pero con una mayor proporción de genes neandertales",
+
+      "Hasta finales de los años 90 existía el consenso científico de que los neandertales y los humanos modernos no podían haberse cruzado por ser dos especies distintas."
+
+    ],
+
+    link: "https://www.bbc.com/mundo/articles/cg42z0kg6zyo",
+
+    fuente: "The evolution of hominin bipedalism in two steps — publicado en la revista Nature (2025).",
+
+    img: "../Imagenes/RecienteI3.png"
+
+  }
+
+};
+
+
+
+const stage   = document.getElementById("stage");
+
+const backBtn = document.getElementById("backBtn");
+
+
+
+const modal   = document.getElementById("modal");
+
+const mChip   = document.getElementById("stela-chip");
+
+const mTitle  = document.getElementById("modal-title");
+
+const mResumen= document.getElementById("modal-resumen");
+
+const mPuntos = document.getElementById("modal-puntos");
+
+const mMeta   = document.getElementById("modal-meta");
+
+const mLink   = document.getElementById("modal-link");
+
+const mVideo  = document.getElementById("modal-video");
+
+const fig     = document.getElementById("fig");
+
+const mImg    = document.getElementById("modal-img");
+
+
+
+function setBG(key){
+
+  const url = BGS[key] || BGS.principal;
+
+  stage.style.setProperty("--bg", `url("${url}")`);
+
+  document.body.dataset.bg = key;
+
+  (key === "principal") ? backBtn.classList.remove("show")
+
+                        : backBtn.classList.add("show");
+
+}
+
+
+
+function setQueryParam(name, value){
+
+  const url = new URL(window.location.href);
+
+  if(value === null || value === undefined) url.searchParams.delete(name);
+
+  else url.searchParams.set(name, value);
+
+  history.replaceState(null, "", url);
+
+}
+
+function getParam(name){
+
+  return (new URL(window.location.href)).searchParams.get(name);
+
+}
+
+
+
+function openModal(tipo){
+
+  const data = ARTICLES[tipo];
+
+  if(!data) return;
+
+
+
+  // chip, textos, puntos, meta, CTA
+
+  mChip.textContent  = data.chip || "ARTÍCULO";
+
+  mTitle.textContent = data.titulo || "";
+
+  mResumen.textContent = data.resumen || "";
+
+  mPuntos.innerHTML = "";
+
+  (data.puntos||[]).forEach(p=>{
+
+    const li = document.createElement("li");
+
+    li.textContent = p; mPuntos.appendChild(li);
+
+  });
+
+  mMeta.textContent = data.fuente ? `Fuente: ${data.fuente}` : "";
+
+  mLink.href = data.link || "#";
+
+  if(data.video && typeof data.video === "string" && data.video.trim()){ mVideo.href = data.video.trim(); mVideo.style.display = "inline-block"; } else { mVideo.style.display = "none"; }
+
+
+
+  // imagen si hay; si no, ilustración 
+
+  if(data.img && typeof data.img === "string" && data.img.trim()){
+
+    mImg.src = data.img.trim();
+
+    fig.classList.add("has-image");
+
+    fig.classList.toggle("contain", (data.fit === "contain"));
+
+  } else {
+
+    mImg.removeAttribute("src");
+
+    fig.classList.remove("has-image");
+
+    fig.classList.remove("contain");
+
+  }
+
+
+
+  modal.classList.add("open");
+
+  document.addEventListener("keydown", escClose);
+
+}
+
+
+
+function closeModal(){
+
+  modal.classList.remove("open");
+
+  document.removeEventListener("keydown", escClose);
+
+}
+
+function escClose(e){ if(e.key === "Escape") closeModal(); }
+
+
+
+/* Hotspots: cambian fondo y abren ficha */
+
+document.querySelectorAll(".hotspot").forEach(hs => {
+  hs.addEventListener("click", (e) => {
+    const tipo = hs.dataset.target;
+    setBG(tipo);
+    openModal(tipo);
+    setQueryParam("tipo", tipo);
+    setQueryParam("open", "1");
+  });
+});modal.addEventListener("click", (e)=>{ if(e.target.hasAttribute("data-close")) closeModal(); });
+
+
+
+backBtn.addEventListener("click", ()=>{
+
+  closeModal();
+
+  setBG("principal");
+
+  setQueryParam("tipo", null);
+
+  setQueryParam("open", null);
+
+});
+
+
+
+/* Init + enlaces directos (?tipo=reciente&open=1) */
+
+(function init(){
+
+  const tipo = getParam("tipo");
+
+  const open = getParam("open");
+
+  setBG(tipo || "principal");
+
+  if(tipo && ARTICLES[tipo] && (open === "1")) openModal(tipo);
+
+})();
+
+// ====== Particle system: mouse-follow + hotspot bursts ======
+(function(){
+  const canvas = document.getElementById('particle-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let DPR = Math.max(window.devicePixelRatio || 1, 1);
+  let w=0,h=0;
+
+  function resize(){
+    DPR = Math.max(window.devicePixelRatio || 1, 1);
+    w = canvas.clientWidth || canvas.width;
+    h = canvas.clientHeight || canvas.height;
+    canvas.width = Math.floor((canvas.clientWidth || canvas.offsetWidth) * DPR);
+    canvas.height = Math.floor((canvas.clientHeight || canvas.offsetHeight) * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize);
+  // ensure initial size
+  requestAnimationFrame(resize);
+
+  const particles = [];
+
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+
+  function spawnParticle(x,y,color){
+    particles.push({
+      x, y,
+      vx: rand(-0.6,0.6), vy: rand(-1.6,-0.2),
+      life: rand(600,1200), age:0,
+      size: rand(4,14), color
+    });
+  }
+
+  function spawnBurst(x,y,count,color){
+    for(let i=0;i<count;i++) spawnParticle(x + rand(-6,6), y + rand(-6,6), color);
+  }
+
+  // throttle mousemove spawns
+  let lastMove = 0;
+  window.addEventListener('mousemove', (e)=>{
+    const now = Date.now();
+    if(now - lastMove > 16){ // ~60fps cap
+      const r = 1 - Math.min(1, Math.abs((e.movementX||0)) / 40);
+      const color = 'rgba(255,250,240,0.9)';
+      spawnBurst(e.clientX, e.clientY, 2, color);
+      lastMove = now;
+    }
+  }, {passive:true});
+
+  // hotspot interactions: burst from center
+  document.querySelectorAll('.hotspot').forEach(hs => {
+    hs.addEventListener('mouseenter', (ev)=>{
+      const rect = hs.getBoundingClientRect();
+      spawnBurst(rect.left + rect.width/2, rect.top + rect.height/2, 18, 'rgba(26,139,89,0.95)');
+    });
+    hs.addEventListener('click', (ev)=>{
+      const rect = hs.getBoundingClientRect();
+      spawnBurst(rect.left + rect.width/2, rect.top + rect.height/2, 40, 'rgba(255,220,120,0.98)');
+    });
+    // keyboard focus feedback
+    hs.addEventListener('focus', ()=>{
+      const rect = hs.getBoundingClientRect();
+      spawnBurst(rect.left + rect.width/2, rect.top + rect.height/2, 24, 'rgba(200,240,220,0.95)');
+    });
+  });
+
+  // animation loop
+  let last = performance.now();
+  function loop(ts){
+    const dt = ts - last; last = ts;
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+
+    // draw particles
+    for(let i = particles.length-1; i>=0; i--){
+      const p = particles[i];
+      p.age += dt;
+      if(p.age >= p.life){ particles.splice(i,1); continue; }
+      // simple physics
+      p.vy += 0.002 * dt; // gravity small
+      p.x += p.vx * (dt/16);
+      p.y += p.vy * (dt/16);
+      const t = 1 - (p.age / p.life);
+      const alpha = Math.max(0, Math.min(1, t));
+      const size = p.size * (0.6 + 0.4 * t);
+
+      // draw glow (robust color handling)
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size*1.8);
+      const inner = p.color || 'rgba(255,250,240,0.9)';
+      let mid = inner;
+      try{
+        const m = inner.match(/rgba?\(([^)]+)\)/);
+        if(m){
+          const parts = m[1].split(',').map(s=>s.trim());
+          const rgb = parts.slice(0,3).join(',');
+          mid = `rgba(${rgb},0.45)`;
+        }
+      }catch(e){ mid = inner; }
+      g.addColorStop(0, inner);
+      g.addColorStop(0.4, mid);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // keep loop going
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+})();
+
+</script>
+
+</body>
+
+</html>
