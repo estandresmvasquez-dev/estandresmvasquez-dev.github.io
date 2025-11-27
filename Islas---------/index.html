@@ -502,6 +502,8 @@
             'fuego': {
                 title: "EL FUEGO",
                 image: "imagenes/fuego2.png", 
+                video_id: "LerWOXj5D9Q&t=1s", 
+                video_url: "https://www.youtube.com/watch?v=LerWOXj5D9Q&t=1s",
                 // ESTE SE MANTIENE LOCAL
                 sections: [
                     { title: "El control del fuego", text: "El dominio del fuego fue un hito evolutivo clave: permitió a los humanos calentar espacios, cocinar alimentos, protegerse de depredadores y expandirse a zonas frías. royalsocietypublishing.org+1" },
@@ -559,17 +561,7 @@
             modalTitle.textContent = data.title;
 
 
-            if (islandId === 'fuego') {
-                // Caso especial: Video local para EL FUEGO
-                const videoHtml = `
-                    <video controls autoplay loop muted class="w-full h-auto rounded-lg shadow-xl" style="max-width: 400px; max-height: 250px;">
-                        <source src="imagenes/video-fuego.mp4" type="video/mp4">
-                        Tu navegador no soporta el elemento de video.
-                    </video>
-                `;
-                modalMediaContainer.innerHTML = videoHtml;
-
-            } else if (data.video_id) {
+            if (data.video_id) {
                 // Caso general: Video de YouTube
                 
                 const embedUrl = `https://www.youtube.com/embed/${data.video_id}?autoplay=1&rel=0`;
@@ -652,7 +644,7 @@
             modalCitationsList.innerHTML = '';
             let allCitations = [...(data.citations || [])];
             
-            if (islandId !== 'fuego' && data.video_url && data.video_url !== '#') {
+            if (data.video_url && data.video_url !== '#') {
                 allCitations.push({ 
                     text: `Video de YouTube: ${data.title}`, 
                     url: data.video_url 
