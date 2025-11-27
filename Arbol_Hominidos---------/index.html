@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Árbol de Ancestros</title>
+    <style>
+        /* ========================================= */
+        /* ESTILOS CSS FINALES */
+        /* ========================================= */
+
+        /* Estilos generales y fondo */
+        body {
+            background: url('img/fondo_bosque.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* 1. TÍTULO PRINCIPAL (FIJO, Z-INDEX ALTO Y TRANSICIÓN) */
+        .titulo {
+            text-align: center;
+            color: #222;
+            background-color: rgba(180, 150, 100, 0.95);
+            /* Fondo más opaco */
+            border: 3px solid #8D6E63;
+            padding: 10px 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            display: inline-block;
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            z-index: 1000;
+            /* Z-index MUY ALTO para garantizar visibilidad */
+            font-size: 2.5em;
+            transition: opacity 0.3s ease-out;
+            /* Transición para el efecto de desvanecimiento */
+            opacity: 1;
+            /* Inicialmente visible */
+        }
+
+        .boton-volver:hover {
+            background-color: #8D6E63;
+        }
+
+        /* Contenedor principal del árbol: AUMENTO DE ALTURA A 1100px */
+        .arbol-container {
+            position: relative;
+            width: 900px;
+            height: 1100px;
+            margin: 100px auto 20px auto;
+            /* Ajuste de margin-top para dejar espacio al título */
+            transition: transform 0.5s ease-in-out;
+            background: url('img/tronco_arbol.png') no-repeat center bottom;
+            background-size: contain;
+            background-position: center 100px;
+        }
+
+        /* Animación de elevación al pasar el mouse */
+        .arbol-container:hover {
+            transform: translateY(-10px);
+        }
+
+        .homínidos-map {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Estilo para cada homínido */
+        .homínido {
+            position: absolute;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out, filter 0.5s;
+            z-index: 10;
+        }
+
+        .homínido:hover {
+            transform: scale(1.15);
+            z-index: 20;
+        }
+
+        .homínido img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: block;
+            margin: 0 auto 5px auto;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .homínido p {
+            font-size: 12px;
+            margin: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        /* ========================================= */
+        /* REGLA PARA HOMÍNIDOS VISTOS (GRIS) */
+        /* ========================================= */
+        .homínido.visto img {
+            filter: grayscale(100%);
+            border-color: #6d6d6d;
+        }
+
+        .homínido.visto p {
+            background: rgba(50, 50, 50, 0.8);
+        }
+
+
+        /* ========================================= */
+        /* POSICIONAMIENTO (sin cambios) */
+        /* ========================================= */
+
+        /* Nivel 1: Base (7-4 Ma) */
+        .h-sahelanthropus {
+            top: 950px;
+            left: 450px;
+        }
+
+        .h-orrorin {
+            top: 900px;
+            left: 600px;
+        }
+
+        .h-ardipithecus {
+            top: 900px;
+            left: 300px;
+        }
+
+
+        /* Nivel 2: Australopithecus Temprano (4-3 Ma) */
+        .h-anamensis {
+            top: 830px;
+            left: 200px;
+        }
+
+        .h-afarensis {
+            top: 750px;
+            left: 350px;
+        }
+
+
+        /* Nivel 3: Australopithecus Tardío / Ramificación (3-2 Ma) */
+        .h-africanus {
+            top: 680px;
+            left: 600px;
+        }
+
+        .h-paranthropus {
+            top: 600px;
+            left: 780px;
+        }
+
+        .h-sediba {
+            top: 700px;
+            left: 780px;
+        }
+
+        .h-habilis {
+            top: 650px;
+            left: 150px;
+        }
+
+        .h-rudolfensis {
+            top: 600px;
+            left: 300px;
+        }
+
+
+        /* Nivel 4: Homo Erectus y Ramas (2 Ma - 500 Ka) */
+        .h-erectus {
+            top: 450px;
+            left: 450px;
+        }
+
+        .h-floresiensis {
+            top: 400px;
+            left: 750px;
+        }
+
+        .h-heidelbergensis {
+            top: 350px;
+            left: 350px;
+        }
+
+
+        /* Nivel 5: Homo Reciente (500 Ka - Presente) */
+        .h-neanderthalensis {
+            top: 250px;
+            left: 180px;
+        }
+
+        .h-denisovan {
+            top: 280px;
+            left: 550px;
+        }
+
+        .h-sapiens {
+            top: 250px;
+            left: 700px;
+        }
+
+
+
+        /* ========================================= */
+        /* ESTILOS DEL MODAL (VENTANA EMERGENTE) */
+        /* ========================================= */
+        #modal-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* FONDO CLARO DEL MODAL */
+        .modal-content {
+            background: rgba(250, 240, 230, 0.95);
+            border: 1px solid #8D6E63;
+            border-radius: 10px;
+            padding: 30px;
+            width: 80%;
+            max-width: 850px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            color: #333;
+            animation: fadeIn 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            /* --- Animación de Hover Agregada --- */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* NUEVA REGLA: ANIMACIÓN AL HACER HOVER SOBRE EL CONTENIDO DEL MODAL */
+        .modal-content:hover {
+            transform: scale(1.02);
+            /* Escala ligeramente */
+            box-shadow: 0 0 40px rgba(141, 110, 99, 0.8);
+            /* Sombra con color del tema */
+        }
+
+
+        /* AJUSTE DE COLUMNAS: 55% para info (REDUCIDO) */
+        #modal-info {
+            flex-grow: 1;
+            padding-right: 20px;
+            max-width: 55%;
+            /* REDUCCIÓN DE TAMAÑO */
+        }
+
+        /* AJUSTE DE COLUMNAS: 45% para mapa (AUMENTADO) */
+        .mapa-container {
+            width: 45%;
+            /* AUMENTO DE TAMAÑO */
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 0;
+            /* Eliminado espacio superior para que la imagen quede arriba */
+            order: 2;
+            /* Asegura que la info sea la columna 1 y el mapa la 2 */
+        }
+
+        /* Estilo para la imagen detallada del homínido (RE-AGREGADO Y AJUSTADO) */
+        .hominid-detail-image {
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            /* Limita la altura para no empujar el mapa */
+            object-fit: contain;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.8);
+            /* Asegurando que quede arriba */
+            order: 1;
+        }
+
+        /* --- NUEVO: Estilo para la imagen dentro de la columna de información --- */
+        .hominid-mini-image {
+            width: 100%;
+            max-width: 150px; /* Tamaño más pequeño para la columna de info */
+            height: auto;
+            border-radius: 5px;
+            margin: 0 20px 15px 0; /* Espacio abajo y a la derecha */
+            float: left; /* Flota a la izquierda del texto */
+            border: 1px solid #8D6E63;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .mapa-container h3 {
+            color: #8D6E63;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .mapa-container p {
+            color: #666;
+        }
+
+        /* Estilo para la referencia de la imagen */
+        .image-source {
+            font-size: 0.75em;
+            color: #777;
+            margin-top: 5px;
+            text-align: center;
+            display: block;
+        }
+
+        .mapa-distribucion {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Estilos de texto */
+        .modal-content h2 {
+            color: #222;
+            margin-top: 0;
+            font-size: 2.2em;
+            border-bottom: 2px solid #8D6E63;
+            padding-bottom: 10px;
+            text-align: left;
+        }
+
+        .modal-content h3 {
+            color: #6D4C41;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        .modal-content ul {
+            list-style: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        /* Estilo para el encabezado de herramientas con imagen */
+        .herramientas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .tool-image {
+            width: 100px;
+            height: auto;
+            border-radius: 5px;
+            margin-left: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilo específico para las herramientas (más visible) */
+        #modal-info .herramientas-list {
+            list-style: none;
+            margin-left: 0;
+            padding-left: 0;
+            color: #333;
+        }
+
+        #modal-info .herramientas-list li {
+            background: rgba(200, 180, 160, 0.5);
+            border-left: 3px solid #8D6E63;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        /* Estilo para los enlaces de navegación cruzada */
+        #modal-info li a.related-link {
+            color: #6D4C41;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+
+        #modal-info li a.related-link:hover {
+            color: #A1887F;
+        }
+
+
+        .modal-content p {
+            font-size: 1.05em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #444;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease-out;
+            z-index: 1;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ========================================= */
+        /* MEDIA QUERY: RESPONSIVE DEL MODAL */
+        /* ========================================= */
+        @media (max-width: 800px) {
+            .modal-content {
+                flex-direction: column;
+                max-width: 95%;
+            }
+
+            #modal-info,
+            .mapa-container {
+                max-width: 100%;
+                width: 100%;
+                padding-right: 0;
+                padding-top: 10px;
+                border-top: 1px solid #ccc;
+            }
+
+            .hominid-mini-image {
+                 float: none; /* Deshacer el float en móviles */
+                 margin: 0 auto 15px auto;
+                 display: block;
+            }
+        }
+
+        /* ========================================= */
+        /* ESTILOS DEL FOOTER AGREGADO */
+        /* ========================================= */
+        .footer {
+            background-color: rgba(60, 40, 20, 0.9);
+            color: #D3B88C;
+            text-align: center;
+            padding: 20px 0;
+            position: relative;
+            margin-top: 50px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .footer p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .footer .logo-footer {
+            width: 50px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        /* Botón de volver arriba */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #8D6E63;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease;
+            z-index: 999;
+        }
+
+        .scroll-to-top:hover {
+            background-color: #A1887F;
+        }
+
+        /* Botón volver */
+        #volver-btn {
+            transition: all 0.3s ease;
+        }
+        #volver-btn:hover {
+            background: #4A3732 !important;
+            color: white !important;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 class="titulo">ÁRBOL DE ANCESTROS</h1>
+    <a href="#" class="boton-volver">←</a>
+
+    <div class="arbol-container">
+        <div class="homínidos-map">
+
+            <div class="homínido h-sahelanthropus" data-nombre="Sahelanthropus tchadensis"><img
+                    src="img/sahelanthropus.png" alt="S. tchadensis">
+                <p>S. tchadensis</p>
+            </div>
+
+            <div class="homínido h-orrorin" data-nombre="Orrorin Tugenensis"><img src="img/orrorin.png"
+                    alt="O. Tugenensis">
+                <p>O. Tugenensis</p>
+            </div>
+
+            <div class="homínido h-ardipithecus" data-nombre="Ardipithecus ramidus"><img src="img/ardipithecus.png"
+                    alt="A. ramidus">
+                <p>A. ramidus</p>
+            </div>
+            <div class="homínido h-anamensis" data-nombre="Australopithecus anamensis"><img src="img/anamensis.jpg"
+                    alt="A. anamensis">
+                <p>A. anamensis</p>
+            </div>
+            <div class="homínido h-afarensis" data-nombre="Australopithecus afarensis"><img src="img/afarensis.png"
+                    alt="A. afarensis">
+                <p>A. afarensis</p>
+            </div>
+            <div class="homínido h-africanus" data-nombre="Australopithecus africanus"><img src="img/africanus.png"
+                    alt="A. africanus">
+                <p>A. africanus</p>
+            </div>
+            <div class="homínido h-paranthropus" data-nombre="Paranthropus boisei"><img src="img/paranthropus.png"
+                    alt="P. boisei">
+                <p>P. boisei</p>
+            </div>
+            <div class="homínido h-sediba" data-nombre="Australopithecus Sediba"><img src="img/sediba.png"
+                    alt="A. sediba">
+                <p>A. sediba</p>
+            </div>
+            <div class="homínido h-habilis" data-nombre="Homo Habilis"><img src="img/habilis.jpg" alt="H. habilis">
+                <p>H. habilis</p>
+            </div>
+            <div class="homínido h-rudolfensis" data-nombre="Homo Rudolfensis"><img src="img/rudolfensis.png"
+                    alt="H. rudolfensis">
+                <p>H. rudolfensis</p>
+            </div>
+            <div class="homínido h-erectus" data-nombre="Homo Erectus"><img src="img/erectus.png" alt="H. erectus">
+                <p>H. erectus</p>
+            </div>
+            <div class="homínido h-floresiensis" data-nombre="Homo Floresiensis"><img src="img/floresiensis.png"
+                    alt="H. floresiensis">
+                <p>H. floresiensis</p>
+            </div>
+            <div class="homínido h-heidelbergensis" data-nombre="Homo Heidelbergensis"><img src="img/heidelbergensis.png"
+                    alt="H. heidelbergensis">
+                <p>H. heidelbergensis</p>
+            </div>
+            <div class="homínido h-neanderthalensis" data-nombre="Homo Neanderthalensis"><img
+                    src="img/neanderthalensis.png" alt="H. neanderthalensis">
+                <p>H. neanderthalensis</p>
+            </div>
+            <div class="homínido h-denisovan" data-nombre="Denisovanos"><img src="img/denisovan.png" alt="Denisovanos">
+                <p>Denisovanos</p>
+            </div>
+            <div class="homínido h-sapiens" data-nombre="Homo Sapiens"><img src="img/sapiens.png" alt="H. sapiens">
+                <p>H. sapiens</p>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="modal-container">
+        <div class="modal-content">
+            <span class="close-button" id="close-modal">&times;</span>
+            <div id="modal-info">
+            </div>
+            <div class="mapa-container">
+                <img id="hominid-detail-image" class="hominid-detail-image" src="" alt="Imagen detallada del homínido">
+                <h3>Distribución Geográfica</h3>
+                <img id="mapa-distribucion" class="mapa-distribucion" src="" alt="Mapa de Distribución">
+                <p style="font-size: 0.8em; margin-top: 10px; text-align: center;">El área marcada indica el rango
+                    conocido de la especie.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <img src="img/dappicol_logo.png" alt="Dappicol Logo" class="logo-footer">
+        <p>© 2025 DAPPICOL. DESARROLLO WEB REALIZADO PARA EL PROYECTO **NUESTROS ORÍGENES**.</p>
+    </footer>
+
+    <button class="scroll-to-top" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });">↑</button>
+
+    <a id="volver-btn" href="../Pagina Principal/index.html" style="position: fixed; bottom: 24px; left: 24px; z-index: 40; display: inline-flex; gap: 0.5rem; align-items: center; padding: 0.5rem 0.8rem; border-radius: 999px; background: rgba(255,255,255,.9); color: #2b2b2b; font: 600 14px/1 system-ui, Segoe UI, sans-serif; box-shadow: 0 1px 8px rgba(0,0,0,.25); text-decoration: none;">
+        ⟵ Volver
+    </a>
+
+    <script>
+        // =========================================
+        // SCRIPT DE MANEJO DE SCROLL (PARA EL TÍTULO)
+        // =========================================
+
+        // Función para manejar el scroll y desvanecer el título
+        function handleScroll() {
+            const titulo = document.querySelector('.titulo');
+            // Distancia que debe recorrer el scroll para que el título se desvanezca (150px)
+            const fadeStart = 0;
+            const fadeUntil = 150;
+            const scrollTop = window.scrollY;
+
+            let opacity = 1;
+
+            if (scrollTop > fadeStart) {
+                // Calcula la opacidad: disminuye a medida que el scroll aumenta.
+                opacity = 1 - (scrollTop - fadeStart) / (fadeUntil - fadeStart);
+                // Asegura que la opacidad no baje de 0.1
+                opacity = Math.max(0.1, opacity);
+            }
+
+            // Aplica la opacidad calculada al título
+            titulo.style.opacity = opacity;
+        }
+
+        // Asigna la función al evento scroll
+        window.addEventListener('scroll', handleScroll);
+
+        // Llama a handleScroll una vez para establecer el estado inicial
+        handleScroll();
+
+        // =========================================
+        // DATOS DEL MODAL Y FUNCIONALIDAD
+        // =========================================
+
+        // --- Fuentes de las Imágenes ---
+        const HOMINID_SOURCE = 'Fuente de la imagen: Smithsonian National Museum of Natural History';
+        const HOMINID_SOURCE_URL = 'https://naturalhistory.si.edu/';
+
+        // Fuentes para las herramientas
+        const TOOL_SOURCES = {
+            'olduvayense.jpg': 'Fuente: Wikimedia Commons (Creative Commons)',
+            'achelense.png': 'Fuente: Wikimedia Commons / European Archaeology',
+            'levallois.png': 'Fuente: Ilustración adaptada de F. Bordes (1953) / Wikimedia',
+            'musteriense.png': 'Fuente: Google Arts & Culture / Museo de Altamira',
+            'paleolitico_sup.png': 'Fuente: Ilustración Museo de la Prehistoria (CC BY-SA)'
+        };
+
+        const datosHomínidos = {
+            'Orrorin Tugenensis': {
+                relacionados: ['Sahelanthropus tchadensis'],
+                hitos: ['Antigüedad de 6.2 a 5.8 Ma.', 'Conocido principalmente por fragmentos de fémur (pierna).', 'El análisis del fémur sugiere un bipedismo habitual.', 'Dientes pequeños, con esmalte grueso, dieta mixta.'],
+                descripcion: 'Una especie candidata a ser un homínido muy temprano. Sus restos fósiles, aunque escasos, proporcionan fuerte evidencia de bipedismo temprano.',
+                imagen: 'img/orrorin_detail.png',
+                mapa: 'img/mapa_orrorin.png',
+                herramientas: ['No hay evidencia de herramientas.'],
+                imagen_herramienta: null
+            },
+
+            'Sahelanthropus tchadensis': {
+                relacionados: ['Orrorin Tugenensis', 'Ardipithecus ramidus'],
+                hitos: ['Antigüedad de 7 a 6 millones de años (Ma).', 'Posiblemente el primer hominino conocido.', 'El cráneo (apodado Toumaï) muestra indicios de bipedismo incipiente (foramen magnum adelantado).', 'Cara plana y caninos pequeños, similar a humanos.'],
+                descripcion: 'El homínido más antiguo conocido, descubierto en Chad. Su cráneo sugiere una postura erguida, marcando el inicio de la línea evolutiva humana.',
+                imagen: 'img/sahelanthropus_detail.png',
+                mapa: 'img/mapa_sahelanthropus.png',
+                herramientas: ['No hay evidencia directa de fabricación de herramientas.', 'Es posible que usara objetos naturales (palos, piedras) sin modificarlos.'],
+                imagen_herramienta: null
+            },
+            'Ardipithecus ramidus': {
+                relacionados: ['Sahelanthropus tchadensis', 'Australopithecus anamensis'],
+                hitos: ['Antigüedad de 4.4 Ma.', 'Conocido por el esqueleto "Ardi".', 'Tenía bipedismo terrestre, pero conservaba adaptaciones para trepar (dedo pulgar oponible en el pie).', 'Vivía en un ambiente boscoso.'],
+                descripcion: 'Una especie clave para comprender la transición al bipedismo. Muestra una mezcla única de rasgos arbóreos y terrestres.',
+                imagen: 'img/ardipithecus_detail.jpg',
+                mapa: 'img/mapa_ardipithecus.png',
+                herramientas: ['No se ha encontrado evidencia de herramientas de piedra.'],
+                imagen_herramienta: null
+            },
+            'Australopithecus anamensis': {
+                relacionados: ['Ardipithecus ramidus', 'Australopithecus afarensis'],
+                hitos: ['Antigüedad de 4.2 a 3.9 Ma.', 'Es una de las formas más tempranas y primitivas de Australopithecus.', 'Confirmación de bipedismo completo gracias a los huesos de la tibia.', 'Dientes con esmalte grueso, adaptados a una dieta más abrasiva.'],
+                descripcion: 'Evidencia temprana de bipedismo habitual. Se considera el ancestro directo más probable de *A. afarensis*.',
+                imagen: 'img/anamensis_detail.png',
+                mapa: 'img/mapa_anamensis.png',
+                herramientas: ['No hay evidencia directa de herramientas de piedra.'],
+                imagen_herramienta: null
+            },
+            'Australopithecus afarensis': {
+                relacionados: ['Australopithecus anamensis', 'Australopithecus africanus', 'Homo Habilis'],
+                hitos: ['Antigüedad de 3.9 a 2.9 Ma.', 'Famoso por el esqueleto "Lucy" y las Huellas de Laetoli.', 'Dimorfismo sexual marcado (machos más grandes que hembras).'],
+                descripcion: 'Una de las especies más conocidas. Tenía un cerebro pequeño y rasgos faciales primitivos, pero era un caminante bípedo eficiente.',
+                imagen: 'img/afarensis_detail.jpg',
+                mapa: 'img/mapa_afarensis.png',
+                herramientas: ['Herramientas de piedra muy simples (lascas afiladas) de la industria Olduvayense, aunque la autoría es debatida.'],
+                imagen_herramienta: null
+            },
+            'Australopithecus africanus': {
+                relacionados: ['Australopithecus afarensis', 'Paranthropus boisei', 'Australopithecus Sediba'],
+                hitos: ['Antigüedad de 3.3 a 2.1 Ma.', 'Primer Australopithecus descubierto en Sudáfrica (Niño de Taung).', 'Cráneo más redondeado y rostro menos prognato que *A. afarensis*.', 'Se considera un posible ancestro de los *Paranthropus* debido a su robustez incipiente.'],
+                descripcion: 'Similar a *A. afarensis* pero con adaptaciones que sugieren una línea evolutiva que se ramificó hacia formas más robustas.',
+                imagen: 'img/africanus_detail.png',
+                mapa: 'img/mapa_africanus.png',
+                herramientas: ['Uso de herramientas óseas, de asta o dientes (cultura Osteodontoquerática), aunque su fabricación es incierta.'],
+                imagen_herramienta: null
+            },
+            'Australopithecus Sediba': {
+                relacionados: ['Australopithecus africanus', 'Homo Habilis'],
+                hitos: ['Antigüedad de 2.0 a 1.8 Ma.', 'Muestra una mezcla de rasgos *Australopithecus* y *Homo* (pelvis y manos modernas).', 'Su posición en el árbol, como ancestro directo de *Homo*, es debatida.'],
+                descripcion: 'Una especie tardía de Australopithecus con un mosaico de características, sugiriendo un vínculo cercano con la emergencia del género *Homo*.',
+                imagen: 'img/sediba_detail.jpg',
+                mapa: 'img/mapa_sediba.png',
+                herramientas: ['Manos con capacidad de precisión, sugiriendo potencial para la fabricación de herramientas, pero sin hallazgos definitivos.'],
+                imagen_herramienta: null
+            },
+            'Paranthropus boisei': {
+                relacionados: ['Australopithecus africanus'],
+                hitos: ['Antigüedad de 2.3 a 1.2 Ma.', 'El homínido "robusto" más conocido.', 'Poseía una cresta sagital prominente.', 'Adaptado a una dieta muy especializada en alimentos duros (tuercas, semillas).'],
+                descripcion: 'Conocido como el "Hombre Cascanueces". Representa una rama lateral que se extinguió sin descendientes conocidos, caracterizada por su extrema robustez craneal.',
+                imagen: 'img/paranthropus_detail.png',
+                mapa: 'img/mapa_boisei.png',
+                herramientas: ['Aunque coexistió con la industria Olduvayense, la mayoría de los investigadores atribuyen su fabricación a *Homo habilis*.'],
+                imagen_herramienta: null
+            },
+            'Homo Habilis': {
+                relacionados: ['Australopithecus afarensis', 'Homo Erectus', 'Homo Rudolfensis'],
+                hitos: ['Antigüedad de 2.4 a 1.4 Ma.', 'Primer homínido clasificado en el género *Homo* ("Hombre hábil").', 'Aumento significativo del tamaño cerebral.', 'El primero en usar herramientas de forma sistemática.'],
+                descripcion: 'El primer gran fabricante de herramientas, marcando el comienzo de la era tecnológica y un cambio hacia una dieta más cárnica.',
+                imagen: 'img/habilis_detail.png',
+                mapa: 'img/mapa_habilis.png',
+                herramientas: ['**Olduvayense (Modo 1):** Cantos rodados golpeados para obtener un filo (Choppers y Chopping tools).'],
+                imagen_herramienta: 'img/olduvayense.jpg'
+            },
+            'Homo Rudolfensis': {
+                relacionados: ['Homo Habilis', 'Homo Erectus'],
+                hitos: ['Antigüedad de 1.9 Ma.', 'Se distingue de *H. habilis* por un cerebro ligeramente mayor y una cara más plana.', 'Su clasificación exacta es un tema de debate.'],
+                descripcion: 'Especie contemporánea de *H. habilis* que coexistió en África Oriental, destacando por su morfología craneal única.',
+                imagen: 'img/rudolfensis_detail.jpg',
+                mapa: 'img/mapa_rudolfensis.png',
+                herramientas: ['Probable fabricante de herramientas **Olduvayenses (Modo 1)**, al igual que *H. habilis*, debido a su contemporaneidad.'],
+                imagen_herramienta: null
+            },
+            'Homo Erectus': {
+                relacionados: ['Homo Habilis', 'Homo Heidelbergensis', 'Homo Floresiensis'],
+                hitos: ['Antigüedad de 1.8 Ma a 100 mil años (Ka).', '**Primera migración fuera de África**.', 'Dominio y uso controlado del fuego.', 'Cuerpo adaptado a largas caminatas.'],
+                descripcion: 'El homínido viajero. Su amplia distribución y el uso del fuego lo convirtieron en la especie más exitosa y duradera del género *Homo*.',
+                imagen: 'img/erectus_detail.png',
+                mapa: 'img/mapa_erectus.png',
+                herramientas: ['**Achelense (Modo 2):** Herramientas de piedra talladas simétricamente, principalmente hachas de mano (bifaces) y hendedores.'],
+                imagen_herramienta: 'img/achelense.png'
+            },
+            'Homo Floresiensis': {
+                relacionados: ['Homo Erectus'],
+                hitos: ['Antigüedad de 100 a 50 Ka.', 'Apodado el "Hobbit" (altura de 1 metro).', 'Evolucionó por enanismo insular en la isla de Flores (Indonesia).'],
+                descripcion: 'Una rama insular y tardía del género *Homo*, que sobrevivió en aislamiento geográfico con herramientas de piedra sencillas.',
+                imagen: 'img/floresiensis_detail.png',
+                mapa: 'img/mapa_floresiensis.png',
+                herramientas: ['Herramientas de piedra relativamente simples, similares al **Olduvayense**, pero más avanzadas que las de *H. habilis*.'],
+                imagen_herramienta: null
+            },
+            'Homo Heidelbergensis': {
+                relacionados: ['Homo Erectus', 'Homo Neanderthalensis', 'Homo Sapiens', 'Denisovanos'],
+                hitos: ['Antigüedad de 600 a 300 Ka.', '**Ancestro común de neandertales y *Homo sapiens*.**', 'Inicio de la construcción de refugios y la caza mayor sistemática.', 'Uso de la técnica Levallois para obtener lascas afiladas.'],
+                descripcion: 'Especie clave que marca el inicio de los "humanos arcaicos" en África, Europa y Asia. Desarrolló tecnologías de caza más complejas.',
+                imagen: 'img/heidelbergensis_detail.png',
+                mapa: 'img/mapa_heidelbergensis.png',
+                herramientas: ['**Achelense avanzado** y primeras técnicas **Levallois (Modo 3):** método para controlar la forma de la lasca a obtener.'],
+                imagen_herramienta: 'img/levallois.png'
+            },
+            'Homo Neanderthalensis': {
+                relacionados: ['Homo Heidelbergensis', 'Homo Sapiens'],
+                hitos: ['Antigüedad de 400 a 40 Ka.', 'Adaptado a climas fríos (Europa y Asia).', 'Capacidad cerebral similar o superior a *H. sapiens*.', 'Entierros intencionales y posible lenguaje articulado.', '**Hubo hibridación con *H. sapiens*.**'],
+                descripcion: 'Nuestros parientes más cercanos, extintos. Eran robustos, inteligentes y tenían una compleja cultura material.',
+                imagen: 'img/neanderthalensis_detail.png',
+                mapa: 'img/mapa_neanderthalensis.png',
+                herramientas: ['**Musteriense (Modo 3):** Desarrollo de la técnica Levallois para producir una variedad de puntas y raspadores eficientes.'],
+                imagen_herramienta: 'img/musteriense.png'
+            },
+            'Denisovanos': {
+                relacionados: ['Homo Heidelbergensis', 'Homo Sapiens'],
+                hitos: ['Antigüedad incierta (posiblemente de 300 a 30 Ka).', 'Conocido casi exclusivamente por ADN encontrado en Siberia y Asia.', '**También hubo hibridación con *H. sapiens* (y neandertales).**', 'Representan una rama paralela a los neandertales.'],
+                descripcion: 'Una población misteriosa, pariente cercano de los neandertales. Su legado sobrevive en el ADN de poblaciones modernas de Asia y Oceanía.',
+                imagen: 'img/denisovan_detail.png',
+                mapa: 'img/mapa_denisovan.png',
+                herramientas: ['Herramientas atribuidas en la Cueva Denisova: principalmente de la industria lítica **Paleolítico Medio** (Musteriense).'],
+                imagen_herramienta: null
+            },
+            'Homo Sapiens': {
+                relacionados: ['Homo Heidelbergensis', 'Homo Neanderthalensis', 'Denisovanos'],
+                hitos: ['Antigüedad de 300 Ka al Presente.', 'Origen en África.', 'Cráneo redondeado, frente vertical y barbilla prominente.', 'Desarrollo de arte rupestre y pensamiento simbólico complejo.', 'Única especie de homínidos sobreviviente.'],
+                descripcion: 'El "Hombre sabio". Caracterizado por la complejidad cultural, el lenguaje y la capacidad de modificar el entorno a gran escala.',
+                imagen: 'img/sapiens_detail.png',
+                mapa: 'img/mapa_sapiens.png',
+                herramientas: ['**Paleolítico Superior (Modo 4/5):** Desarrollo de hojas, herramientas de hueso, asta, arcos, flechas y la microlitización.'],
+                imagen_herramienta: 'img/paleolitico_sup.png'
+            },
+        };
+
+        // =========================================
+        // LÓGICA DEL MODAL (CON REINCORPORACIÓN DE IMAGEN DETALLADA)
+        // =========================================
+
+        const homínidos = document.querySelectorAll('.homínido');
+        const modalContainer = document.getElementById('modal-container');
+        const closeModalButton = document.getElementById('close-modal');
+        const modalInfo = document.getElementById('modal-info');
+        const hominidDetailImage = document.getElementById('hominid-detail-image'); // Se mantiene en la columna del mapa
+        const mapaDistribucion = document.getElementById('mapa-distribucion');
+
+        // Función para poblar y mostrar el modal
+        function mostrarModal(nombre) {
+            const data = datosHomínidos[nombre];
+            modalInfo.innerHTML = '';
+
+            // 1. Generación del título
+            let htmlContent = `<h2>${nombre}</h2>`;
+
+            // 2. **INSERCIÓN DE LA IMAGEN PEQUEÑA Y FLOTANTE**
+            htmlContent += `<img src="${data.imagen}" alt="Cráneo de ${nombre}" class="hominid-mini-image">`;
+
+            // 3. Generación de la descripción (flotará alrededor de la imagen)
+            htmlContent += `<p>${data.descripcion}</p>`;
+
+            // 4. Limpia el float para que el resto del contenido no se vea afectado
+            htmlContent += `<div style="clear: both;"></div>`;
+
+
+            // 5. Generación de Hitos Clave
+            htmlContent += '<h3>Hitos Clave</h3><ul>';
+            data.hitos.forEach(hito => {
+                htmlContent += `<li>${hito}</li>`;
+            });
+            htmlContent += '</ul>';
+
+            // 6. Generación de Herramientas (con o sin imagen)
+            htmlContent += `<div class="herramientas-header"><h3>Herramientas y Tecnología</h3>`;
+            let toolSource = data.imagen_herramienta ? TOOL_SOURCES[data.imagen_herramienta.split('/').pop()] : HOMINID_SOURCE;
+            let toolImageHtml = '';
+
+            if (data.imagen_herramienta) {
+                toolImageHtml = `<img src="${data.imagen_herramienta}" alt="Herramienta de ${nombre}" class="tool-image">`;
+                // Flota la imagen para el recuadro más pequeño si hay herramienta
+                htmlContent = htmlContent.replace('<h3>Herramientas y Tecnología</h3>', '<h3 style="float: left;">Herramientas y Tecnología</h3>');
+                htmlContent += toolImageHtml;
+            }
+            htmlContent += `</div>`;
+
+            // Limpia el float si se usó
+            htmlContent += data.imagen_herramienta ? '<div style="clear: both;"></div>' : '';
+
+
+            htmlContent += `<ul class="herramientas-list">`;
+            data.herramientas.forEach(herramienta => {
+                htmlContent += `<li>${herramienta}</li>`;
+            });
+            htmlContent += '</ul>';
+
+            // 7. Generación de especies relacionadas (enlaces de navegación cruzada)
+            if (data.relacionados && data.relacionados.length > 0) {
+                htmlContent += '<h3>Especies Relacionadas</h3><ul>';
+                data.relacionados.forEach(relacionado => {
+                    htmlContent += `<li><a href="#" class="related-link" data-nombre="${relacionado}">${relacionado}</a></li>`;
+                });
+                htmlContent += '</ul>';
+            }
+
+            // 8. Fuente de la imagen (del homínido principal)
+            htmlContent += `<span class="image-source">Fuente de la imagen del homínido: <a href="${HOMINID_SOURCE_URL}" target="_blank">${HOMINID_SOURCE.split(': ')[1]}</a></span>`;
+
+
+            modalInfo.innerHTML = htmlContent;
+            hominidDetailImage.src = data.imagen; // ASIGNACIÓN DE LA IMAGEN DETALLADA EN COLUMNA DEL MAPA
+            mapaDistribucion.src = data.mapa;
+
+            // Marca como visto y muestra
+            document.querySelector(`.homínido[data-nombre="${nombre}"]`).classList.add('visto');
+            modalContainer.style.display = 'flex';
+        }
+
+        // Event listeners para los homínidos
+        homínidos.forEach(homínido => {
+            homínido.addEventListener('click', () => {
+                const nombre = homínido.getAttribute('data-nombre');
+                mostrarModal(nombre);
+            });
+        });
+
+        // Event listener para el cierre del modal
+        closeModalButton.addEventListener('click', () => {
+            modalContainer.style.display = 'none';
+        });
+
+        // Event listener para cerrar el modal al hacer clic fuera
+        window.addEventListener('click', (e) => {
+            if (e.target === modalContainer) {
+                modalContainer.style.display = 'none';
+            }
+        });
+
+        // Event listener para navegación cruzada dentro del modal
+        modalInfo.addEventListener('click', (e) => {
+            if (e.target.classList.contains('related-link')) {
+                e.preventDefault();
+                const nuevoNombre = e.target.getAttribute('data-nombre');
+                mostrarModal(nuevoNombre);
+            }
+        });
+    </script>
+</body>
+
+</html>
